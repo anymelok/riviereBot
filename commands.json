@@ -1,0 +1,5 @@
+{
+    "restart": "shutdown /r /t 1", 
+    "shutdown": "shudtown /s /t 1", 
+    "notepad": "notepad.exe"
+}
