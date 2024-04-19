@@ -16,11 +16,9 @@ from os import execv
 import sys
 
 
-aid = 356484895
-
-
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.bot_token.get_secret_value())
+aid = config.aid.get_secret_value()
 
 # print(not (config.cock_sucken))
 
@@ -50,9 +48,21 @@ async def restart(message):
 async def handle_text(message):
     if message.from_user.id == aid:
         await cmds.handle_text_commands(message)
-        # await message.delete()
+        
+        # Hidden users doesn't have user id
+        # so i can't answer ther manually
+        
+        # print(message.reply_to_message.forward_from.id)
     else:
         await message.forward(aid)
+
+
+@dp.edited_message()
+async def edited_message_handler(edited_message):
+    if edited_message.from_user.id == aid:
+        await cmds.handle_text_commands(edited_message)
+    else:
+        await edited_message.forward(aid)
 
 
 @dp.message(F.video)
