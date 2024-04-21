@@ -18,9 +18,14 @@ import sys
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.bot_token.get_secret_value())
-aid = config.aid.get_secret_value()
+aid = int(config.aid.get_secret_value())
 
-# print(not (config.cock_sucken))
+ids = [
+        aid,
+        int(config.kid.get_secret_value()),
+        int(config.sid.get_secret_value())
+       ]
+
 
 dp = Dispatcher()
 dp['started_at'] = datetime.now()
@@ -42,6 +47,14 @@ async def restart(message):
     if message.from_user.id == aid:
         await message.delete()
         await execv(sys.executable, [sys.executable, *sys.argv])
+        
+
+@dp.message(Command('kys'))
+async def restart(message):
+    if message.from_user.id == aid:
+        await message.delete()
+        await message.answer('dying...')
+        sys.exit()
 
 
 @dp.message(F.text)
@@ -50,7 +63,7 @@ async def handle_text(message):
         await cmds.handle_text_commands(message)
         
         # Hidden users doesn't have user id
-        # so i can't answer ther manually
+        # so i can't answer them manually
         
         # print(message.reply_to_message.forward_from.id)
     else:
@@ -67,8 +80,8 @@ async def edited_message_handler(edited_message):
 
 @dp.message(F.video)
 async def handle_video(message):
-    if message.from_user.id == aid:
-        await cmds.convertToNote(message, bot, aid)
+    if message.from_user.id in ids:
+        await cmds.convertToNote(message, bot, message.from_user.id)
         await message.delete()
     else:
         await message.forward(aid)
@@ -76,32 +89,17 @@ async def handle_video(message):
 
 @dp.message(F.audio)
 async def handle_audio(message):
-    if message.from_user.id == aid:
-        await cmds.convertToVoice(message, bot, aid)
+    if message.from_user.id in ids:
+        await cmds.convertToVoice(message, bot, message.from_user.id)
         await message.delete()
     else:
         await message.forward(aid)
 
+
 @dp.message()
 async def handle_others(message):
-    if message.from_user.id != aid:
+    if message.from_user.id not in ids:
         await message.forward(aid)
-
-
-# @dp.callback_query(F.data.startswith('call_'))
-# async def sendScreen(call: types.CallbackQuery, started_at: str):
-#     if call.data == 'call_sendScreen':
-#         await bot.send_photo(aid, cmds.getScreen(), 
-#                              reply_markup=kb)
-    
-#     if call.data == 'call_showInfo':
-#         start_time = started_at.strftime('%d.%m.%Y %H:%M:%S')
-#         wort_time = str(datetime.now() - started_at)[:-7]
-
-#         await bot.send_message(aid, f'Bot started {start_time}\nWorking {wort_time}',
-#                                reply_markup=kb)
-
-#     await cmds.handle_text_commands(cmds.replyMes)
     
 
 async def main():

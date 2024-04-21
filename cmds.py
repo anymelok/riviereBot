@@ -1,15 +1,19 @@
 from aiogram.types import FSInputFile
 
-from subprocess import Popen
+from subprocess import Popen, STARTUPINFO, STARTF_USESHOWWINDOW
 import sys
 from os import popen
 from mss import mss
 from validators import url
 from webbrowser import open as openInBrowser
 from keyboard import send, write
+from ffmpeg import probe
 
 import keyboards
 import readWrite
+
+startupinfo = STARTUPINFO()
+startupinfo.dwFlags |= STARTF_USESHOWWINDOW
 
 cmds = {}
 lastCommand = ''
@@ -101,7 +105,6 @@ async def handle_text_commands(message):
                 else:
                     message.answer('Unknown command')
 
-
     if command != 'last':
         lastCommand = message
 
@@ -146,10 +149,9 @@ async def convertToNote(message, bot, aid):
     file_id = message.video.file_id
     file = await bot.get_file(file_id)
     await bot.download_file(file.file_path, 'files/videonote.mp4')
-
-    Popen('ffmpeg -i "files/videonote.mp4" -loglevel warning\
-            -vf "crop=in_w:in_w, scale=512x512" -y "files/videonoter.mp4"').wait()
     
+    cropToSquare('files/videonote.mp4')
+
     await bot.send_video_note(aid, FSInputFile('files/videonoter.mp4'))
         
 
@@ -158,16 +160,19 @@ async def convertToVoice(message, bot, aid):
     file = await bot.get_file(file_id)
     await bot.download_file(file.file_path, 'files/audio.mp3')
 
-    Popen('ffmpeg -i "files/audio.mp3" -vn -b:a 0.03M -loglevel warning\
-           -acodec libopus -y "files/voice.ogg"').wait()
+    Popen('ffmpeg -i "files/audio.mp3" -vn -b:a 0.03M -loglevel quiet\
+           -acodec libopus -y "files/voice.ogg"',
+           startupinfo=startupinfo).wait()
 
     await bot.send_voice(aid, FSInputFile('files/voice.ogg'))
+
 
 async def deleteMessage(message):
     try:
         await message.delete()
     except:
         pass
+
 
 async def addMon(add: bool):
     # chdir('D:/Apps/usbmmidd_v2/')
@@ -177,6 +182,17 @@ async def addMon(add: bool):
     else:
         Popen('D:/Apps/usbmmidd_v2/off.bat')
 
+
+def cropToSquare(video):
+    p = probe(video)
+    video_streams = [stream for stream in p["streams"] if stream["codec_type"] == "video"]
+    w, h = video_streams[0]['width'], video_streams[0]['height']
+    sq = min(w, h)
+    
+    Popen(f'ffmpeg -i "{video}" -loglevel quiet\
+        -vf "crop={sq}:{sq}, scale=512x512" -y "files/videonoter.mp4"',
+        startupinfo=startupinfo).wait()
+    
 
 def sendCommand(cmd):
     print('sendCommand')
