@@ -30,7 +30,7 @@ ids = [
 dp = Dispatcher()
 dp['started_at'] = datetime.now()
 
-
+# Вывести инфу сколько работает
 @dp.message(Command('info'))
 async def cmd_info(message: types.Message, started_at: str):
     if message.from_user.id == aid:
@@ -42,6 +42,8 @@ async def cmd_info(message: types.Message, started_at: str):
         await message.delete()
 
 
+# Полный перезапуск бота
+# Работает даже если изменить исходники
 @dp.message(Command('r'))
 async def restart(message):
     if message.from_user.id == aid:
@@ -49,6 +51,7 @@ async def restart(message):
         await execv(sys.executable, [sys.executable, *sys.argv])
         
 
+# Попросить бота убиться
 @dp.message(Command('kys'))
 async def restart(message):
     if message.from_user.id == aid:
@@ -56,20 +59,19 @@ async def restart(message):
         await message.answer('dying...')
         sys.exit()
 
-
+# Хендлинг текста как команд
 @dp.message(F.text)
 async def handle_text(message):
+    
+    # Работает только на мой id в тг
     if message.from_user.id == aid:
         await cmds.handle_text_commands(message)
-        
-        # Hidden users doesn't have user id
-        # so i can't answer them manually
-        
-        # print(message.reply_to_message.forward_from.id)
+    
     else:
         await message.forward(aid)
 
 
+# Хендлинг редактирования сообщений
 @dp.edited_message()
 async def edited_message_handler(edited_message):
     if edited_message.from_user.id == aid:
@@ -78,24 +80,30 @@ async def edited_message_handler(edited_message):
         await edited_message.forward(aid)
 
 
+# Хендлинг видео
 @dp.message(F.video)
 async def handle_video(message):
     if message.from_user.id in ids:
+        # Конвертация видео в кружок
         await cmds.convertToNote(message, bot, message.from_user.id)
         await message.delete()
     else:
         await message.forward(aid)
 
 
+# Хенлинг аудио
 @dp.message(F.audio)
 async def handle_audio(message):
     if message.from_user.id in ids:
+        
+        # Конвертация аудио в голосовое
         await cmds.convertToVoice(message, bot, message.from_user.id)
         await message.delete()
     else:
         await message.forward(aid)
 
 
+# Пересылка чужих сообщений мне по приколу
 @dp.message()
 async def handle_others(message):
     if message.from_user.id not in ids:

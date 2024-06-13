@@ -1,5 +1,7 @@
 {
     "restart": "shutdown /r /t 1", 
     "shutdown": "shudtown /s /t 1", 
-    "notepad": "notepad.exe"
+    "notepad": "notepad.exe",
+    "addmon": "D:/Apps/usbmmidd_v2/on.bat",
+    "delmon": "D:/Apps/usbmmidd_v2/off.bat"
 }
