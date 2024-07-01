@@ -1,5 +1,5 @@
 {
-    "restart": "shutdown /r /t 1", 
+    "restartComputer": "res /r /t 1", 
     "shutdown": "shudtown /s /t 1", 
     "notepad": "notepad.exe",
     "addmon": "D:/Apps/usbmmidd_v2/on.bat",

@@ -7,6 +7,7 @@ from mss import mss
 from validators import url
 from webbrowser import open as openInBrowser
 from keyboard import send, write
+from time import time, sleep
 
 import keyboards
 import readWrite
@@ -82,7 +83,7 @@ async def handle_text_commands(message):
             # Изменить масштаб интерфейса
             # Удобно когда с телефона надо подключиться к компу
             case 'scale':
-                scale = await setScale(message)
+                scale = await setScale(textCommand)
                 await deleteMessage(message)
                 await message.answer(f'Scale set to {scale}')
             
@@ -91,7 +92,15 @@ async def handle_text_commands(message):
                 output = popen(f'cmd /c chcp 65001 & {message.text[4:]}').read()
                 if not output == 'Active code page: 65001':
                     message.answer(f'cmd: {output[:-1].replace("Active code page: 65001","")}') 
-
+                    
+            case 'restart':
+                timeout = 5
+                if time() - int(message.date.timestamp()) > timeout:
+                    await message.answer(f'More than {timeout} seconds passed. Restart cancelled')
+                    break
+                await deleteMessage(message)
+                await sendCommand('restartComputer')
+                
             # Выполнение последней команды
             case 'last':
                 await deleteMessage(message)
@@ -143,7 +152,7 @@ async def writeLine(textCommand):
     return line
 
 
-async def setScale(textCommand):
+async def setScale(textCommand: str):
     scale = textCommand.split()[1]
     Popen(f'files/setDpi.exe {scale}')
     return scale
